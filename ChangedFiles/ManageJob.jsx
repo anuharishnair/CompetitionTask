@@ -1,5 +1,4 @@
-﻿
-import React from 'react';
+﻿import React from 'react';
 import { Grid, Button, Dropdown } from 'semantic-ui-react';
 import Cookies from 'js-cookie';
 import { BodyWrapper, loaderData } from '../../Layout/BodyWrapper.jsx';
@@ -21,32 +20,30 @@ export const FilterComponent = ({ filters, sortBy, onFilterChange, onSortChange 
 
     return (
         <div>
-            {/* Dropdown for filter */}
             <label htmlFor="filter-dropdown" style={{ fontWeight: 'bold' }}>Filter: </label>
             <Dropdown
                 selection
                 multiple
                 options={filterOptions}
-                value={Object.keys(filters).filter(key => filters[key])} // Get active filters
+                value={Object.keys(filters).filter(key => filters[key])}
                 onChange={(e, { value }) => onFilterChange(value)}
                 placeholder='Choose filter'
                 style={{
                     border: 'none',
                     outline: 'none',
                     backgroundColor: 'transparent',
-                    boxShadow: 'none', 
+                    boxShadow: 'none',
                 }}
             />
 
-            {/* Dropdown for sorting by date */}
-            <label htmlFor="filter-dropdown" style={{ fontWeight: 'bold' }}>Sort by date: </label>
+            <label htmlFor="sort-dropdown" style={{ fontWeight: 'bold' }}>Sort by date: </label>
             <Dropdown
                 selection
                 options={sortOptions}
                 value={sortBy.date}
                 onChange={(e, { value }) => onSortChange(value)}
                 placeholder='Sort by date'
-                style={{                  
+                style={{
                     border: 'none',
                     outline: 'none',
                     backgroundColor: 'transparent',
@@ -68,9 +65,11 @@ export default class ManageJob extends React.Component {
 
         this.state = {
             loadJobs: [],
+            allJobs: [], // Store all jobs fetched from API
             loaderData: loader,
-            activePage: 1,
+            activePage: 1, // Track the active page for pagination
             totalPages: 1,
+            jobsPerPage: 4, // Number of jobs per page (adjust as needed)
             sortBy: {
                 date: "desc"
             },
@@ -101,10 +100,8 @@ export default class ManageJob extends React.Component {
         this.loadData();
     }
 
-    // Handle filter change from multi-select dropdown
     handleFilterChange(selectedFilters) {
         if (selectedFilters === 'reset') {
-            // Reset filters to default values
             this.setState({
                 filter: {
                     showActive: true,
@@ -136,25 +133,30 @@ export default class ManageJob extends React.Component {
     }
 
     handlePageChange(direction) {
-        if (direction === 'next' && this.state.activePage < this.state.totalPages) {
+        const { activePage, totalPages } = this.state;
+
+        if (direction === 'next' && activePage < totalPages) {
             this.setState(prevState => ({ activePage: prevState.activePage + 1 }), this.loadData);
-        } else if (direction === 'prev' && this.state.activePage > 1) {
+        } else if (direction === 'prev' && activePage > 1) {
             this.setState(prevState => ({ activePage: prevState.activePage - 1 }), this.loadData);
         }
     }
 
     loadData() {
-        const link = 'http://localhost:51689/listing/listing/getSortedEmployerJobs';
+        const link = 'https://talenttalentapp-hpezeeh7b6cgahgn.australiaeast-01.azurewebsites.net/listing/listing/getSortedEmployerJobs';
         const cookies = Cookies.get('talentAuthToken');
 
+        const { activePage, jobsPerPage, sortBy, filter } = this.state;
+
         const params = {
-            activePage: this.state.activePage,
-            sortbyDate: this.state.sortBy.date,
-            showActive: this.state.filter.showActive,
-            showClosed: this.state.filter.showClosed,
-            showDraft: this.state.filter.showDraft,
-            showExpired: this.state.filter.showExpired,
-            showUnexpired: this.state.filter.showUnexpired
+            activePage,
+            limit: jobsPerPage, 
+            sortbyDate: sortBy.date,
+            showActive: filter.showActive,
+            showClosed: filter.showClosed,
+            showDraft: filter.showDraft,
+            showExpired: filter.showExpired,
+            showUnexpired: filter.showUnexpired
         };
 
         fetch(`${link}?${new URLSearchParams(params)}`, {
@@ -167,9 +169,13 @@ export default class ManageJob extends React.Component {
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
+                    const totalJobs = data.totalCount; 
+                    const totalPages = Math.ceil(totalJobs / jobsPerPage); 
+
                     this.setState({
-                        loadJobs: data.myJobs,
-                        totalPages: Math.ceil(data.totalCount / 4) 
+                        allJobs: data.myJobs,
+                        totalPages,
+                        loadJobs: data.myJobs 
                     });
                 } else {
                     console.error("Error loading jobs:", data.message);
@@ -178,7 +184,16 @@ export default class ManageJob extends React.Component {
             .catch(error => console.error("API call error:", error));
     }
 
+    componentDidUpdate(prevProps, prevState) {
+        // Only update if the active page changes
+        if (prevState.activePage !== this.state.activePage) {
+            this.loadData();
+        }
+    }
+
     render() {
+        const { loadJobs, activePage, totalPages } = this.state;
+
         return (
             <BodyWrapper reload={this.init} loaderData={this.state.loaderData}>
                 <div className="manage-jobs-container">
@@ -189,10 +204,10 @@ export default class ManageJob extends React.Component {
                         onFilterChange={this.handleFilterChange}
                         onSortChange={this.handleSortChange}
                     />
-                    {this.state.loadJobs.length > 0 ? (
+                    {loadJobs.length > 0 ? (
                         <React.Fragment>
                             <Grid columns={4}>
-                                {this.state.loadJobs.map(job => (
+                                {loadJobs.map(job => (
                                     <Grid.Column key={job.id}>
                                         <JobSummaryCard job={job} />
                                     </Grid.Column>
@@ -203,19 +218,18 @@ export default class ManageJob extends React.Component {
                             <div className="pagination-controls" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: '20px' }}>
                                 <Button
                                     onClick={() => this.handlePageChange('prev')}
-                                    disabled={this.state.activePage === 1}
+                                    disabled={activePage === 1}
                                 >
                                     Previous
                                 </Button>
-                                <span style={{ margin: '0 10px' }}>Page {this.state.activePage} of {this.state.totalPages}</span>
+                                <span style={{ margin: '0 10px' }}>Page {activePage} of {totalPages}</span>
                                 <Button
                                     onClick={() => this.handlePageChange('next')}
-                                    disabled={this.state.activePage === this.state.totalPages}
+                                    disabled={activePage === totalPages}
                                 >
                                     Next
                                 </Button>
                             </div>
-
                         </React.Fragment>
                     ) : (
                         <p>No jobs found.</p>

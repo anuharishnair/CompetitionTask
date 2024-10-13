@@ -1,19 +1,16 @@
 ﻿import React from 'react';
 import { Card, Button, Icon, Label } from 'semantic-ui-react';
-
 // JobSummaryCard Component
 export class JobSummaryCard extends React.Component {
     constructor(props) {
         super(props);
         this.selectJob = this.selectJob.bind(this);
-        this.copyJob = this.copyJob.bind(this); 
+        this.copyJob = this.copyJob.bind(this);
     }
-
     selectJob(id) {
         // Logic to handle selecting a job (Close/Edit/Copy)
         console.log(`Selected job ID: ${id}`);
     }
-
     copyJob(job) {
         // Logic to copy job details
         const jobDetails = `
@@ -29,11 +26,9 @@ export class JobSummaryCard extends React.Component {
                 console.error('Could not copy text: ', err);
             });
     }
-
     render() {
         const { job } = this.props;
         const isExpired = job.status === 0;
-
         return (
             <Card className="job-summary-card">
                 <Card.Content>
@@ -79,9 +74,8 @@ export class JobSummaryCard extends React.Component {
                         </div>
                     </div>
                 </Card.Content>
-            </Card> 
+            </Card>
         );
     }
 }
-
 export default JobSummaryCard;

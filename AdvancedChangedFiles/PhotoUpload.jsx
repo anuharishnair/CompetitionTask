@@ -37,9 +37,13 @@ export default class PhotoUpload extends Component {
 
     // Handle image upload (can be integrated with an API to save the image)
     handleImageUpload() {
-        if (this.state.selectedImage) {            
+        if (this.state.selectedImage) {
             console.log("Uploading image:", this.state.selectedImage);
+            // Simulate successful image upload
             this.setState({ isImageUploaded: true });
+
+            // Show success notification using TalentUtil
+            TalentUtil.notification.show('Profile photo added successfully!', 'success');
         } else {
             alert("Please select an image to upload.");
         }
@@ -47,7 +51,7 @@ export default class PhotoUpload extends Component {
 
     // Function to open the file picker when camera icon is clicked
     openFilePicker() {
-        this.fileInputRef.current.click();  
+        this.fileInputRef.current.click();
     }
 
     render() {
@@ -61,7 +65,7 @@ export default class PhotoUpload extends Component {
                         </div>
                     ) : (
                         <div className="camera-icon" style={{ cursor: 'pointer', fontSize: '50px' }} onClick={this.openFilePicker}>
-                            <span role="img" aria-label="camera">📸</span> 
+                            <span role="img" aria-label="camera">📸</span>
                         </div>
                     )}
 
@@ -71,7 +75,7 @@ export default class PhotoUpload extends Component {
                         accept="image/jpeg, image/png"
                         onChange={this.handleImageChange}
                         style={{ display: 'none' }}
-                        ref={this.fileInputRef}  
+                        ref={this.fileInputRef}
                     />
 
                     {/* Show the image thumbnail and upload button after selecting an image */}

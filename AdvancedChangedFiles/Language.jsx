@@ -41,7 +41,7 @@ export default class Language extends React.Component {
     }
 
     handleEditClick(language, event) {
-        event.preventDefault(); 
+        event.preventDefault();
         this.setState({
             isEditing: language.id,
             isAdding: false,
@@ -50,7 +50,7 @@ export default class Language extends React.Component {
     }
 
     handleDeleteClick(id, event) {
-        event.preventDefault(); 
+        event.preventDefault();
         const updatedLanguages = this.state.languages.filter(function (lang) {
             return lang.id !== id;
         });
@@ -60,6 +60,12 @@ export default class Language extends React.Component {
     handleSaveClick(event) {
         event.preventDefault();
         const { isEditing, newLanguage, languages } = this.state;
+
+        if (newLanguage.name.trim() === '') {
+            TalentUtil.notification.show("Please enter a language name", "error", null, null);
+            return;
+        }
+
         if (isEditing) {
             const updatedLanguages = languages.map((lang) => {
                 if (lang.id === isEditing) {
@@ -75,6 +81,8 @@ export default class Language extends React.Component {
                 languages: updatedLanguages,
                 isEditing: null,
                 newLanguage: { name: '', level: 'Basic' },
+            }, () => {
+                TalentUtil.notification.show("Profile updated successfully!", "success");
             });
         } else {
             const newLang = {
@@ -87,6 +95,8 @@ export default class Language extends React.Component {
                 languages: updatedLanguages,
                 isAdding: false,
                 newLanguage: { name: '', level: 'Basic' },
+            }, () => {
+                TalentUtil.notification.show("Profile updated successfully!", "success");
             });
         }
     }
@@ -111,7 +121,7 @@ export default class Language extends React.Component {
                                 <th style={{ textAlign: 'left' }}>Level</th>
                                 <th style={{ textAlign: 'center' }}>
                                     <button
-                                        style={{ marginLeft: '10px' }} 
+                                        style={{ marginLeft: '10px' }}
                                         className="ui teal button"
                                         onClick={this.handleAddClick}
                                         type="button"

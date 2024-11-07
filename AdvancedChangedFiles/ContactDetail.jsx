@@ -2,6 +2,7 @@
 import Cookies from 'js-cookie';
 import { ChildSingleInput } from '../Form/SingleInput.jsx';
 import { Location } from '../Employer/CreateJob/Location.jsx';
+
 export class IndividualDetailSection extends Component {
     constructor(props) {
         super(props)
@@ -51,11 +52,30 @@ export class IndividualDetailSection extends Component {
     }
 
     saveContact() {
-        console.log(this.props.componentId)
-        console.log(this.state.newContact)
-        const data = Object.assign({}, this.state.newContact)
-        this.props.controlFunc(this.props.componentId, data)
-        this.closeEdit()
+        const { email, phone } = this.state.newContact;
+
+        // Email validation (basic regex for format)
+        const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+        const phonePattern = /^[0-9]{10,12}$/; 
+
+        if (!email || !emailPattern.test(email)) {
+            TalentUtil.notification.show("Please enter a valid email address!", "error");
+            return;
+        }
+
+        if (!phone || !phonePattern.test(phone)) {
+            TalentUtil.notification.show("Please enter a valid phone number!", "error");
+            return;
+        }
+
+        console.log(this.props.componentId);
+        console.log(this.state.newContact);
+        const data = Object.assign({}, this.state.newContact);
+        this.props.controlFunc(this.props.componentId, data);
+        this.closeEdit();
+
+        // Show success notification
+        TalentUtil.notification.show('Profile updated successfully!', 'success');
     }
 
     render() {
@@ -97,7 +117,6 @@ export class IndividualDetailSection extends Component {
                     placeholder="Enter an email"
                     errorMessage="Please enter a valid email"
                 />
-
                 <ChildSingleInput
                     inputType="text"
                     label="Phone number"
@@ -108,7 +127,6 @@ export class IndividualDetailSection extends Component {
                     placeholder="Enter a phone number"
                     errorMessage="Please enter a valid phone number"
                 />
-
                 <button type="button" className="ui teal button" onClick={this.saveContact}>Save</button>
                 <button type="button" className="ui button" onClick={this.closeEdit}>Cancel</button>
             </div>
@@ -116,7 +134,6 @@ export class IndividualDetailSection extends Component {
     }
 
     renderDisplay() {
-
         let fullName = this.props.details ? `${this.props.details.firstName} ${this.props.details.lastName}` : ""
         let email = this.props.details ? this.props.details.email : ""
         let phone = this.props.details ? this.props.details.phone : ""
@@ -135,6 +152,7 @@ export class IndividualDetailSection extends Component {
         )
     }
 }
+
 
 
 export class CompanyDetailSection extends Component {

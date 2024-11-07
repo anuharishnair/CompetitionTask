@@ -47,8 +47,23 @@ export class Address extends React.Component {
 
     handleSubmit(event) {
         event.preventDefault();
-        console.log('Address submitted:', this.state.address);
-        this.setState({ isEditing: false });
+        // Add validation if needed
+        const { address } = this.state;
+        if (this.validateAddress(address)) {
+            console.log('Address submitted:', address);
+            this.setState({ isEditing: false });
+            TalentUtil.notification.show("Profile updated successfully!", "success", null, null);
+        }
+        else
+        {
+            TalentUtil.notification.show("Please enter all address details!", "error", null, null);
+        }
+
+    }
+
+    validateAddress(address) {      
+        return address.number && address.street && address.suburb &&
+            address.postCode && address.city && address.country;
     }
 
     handleEdit() {
@@ -145,7 +160,7 @@ export class Address extends React.Component {
                             })}
                         </select>
                     </div>
-                    <div style={{ textAlign: 'right', marginBottom: '10px', marginTop: '10px'}}>
+                    <div style={{ textAlign: 'right', marginBottom: '10px', marginTop: '10px' }}>
                         <button type="submit" className="ui teal button">Save</button>
                         <button type="button" className="ui button" onClick={this.handleCancel}>Cancel</button>
                     </div>
@@ -193,10 +208,8 @@ export class Address extends React.Component {
                 </div>
             );
         }
-
     }
 }
-
 
 
 export class Nationality extends React.Component {
@@ -224,10 +237,16 @@ export class Nationality extends React.Component {
 
     handleSave() {
         const { selectedNationality } = this.state;
-        if (this.props.onSave) {
-            this.props.onSave(selectedNationality);
+        if (selectedNationality) {
+            if (this.props.onSave) {
+                this.props.onSave(selectedNationality);
+            }
+            this.setState({ isEditing: false }, () => {
+                TalentUtil.notification.show("Profile updated successfully!", "success", null, null);
+            });
+        } else {
+            TalentUtil.notification.show("Please select your country", "error", null, null);
         }
-        this.setState({ isEditing: false });
     }
 
     handleCancel() {

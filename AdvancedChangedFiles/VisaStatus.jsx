@@ -28,8 +28,25 @@ class VisaStatus extends React.Component {
 
     handleSubmit(event) {
         event.preventDefault();
-        console.log('Visa Type:', this.state.visaType);
-        console.log('Visa Expiry Date:', this.state.visaExpiryDate);
+
+        const { visaType, visaExpiryDate } = this.state;
+
+        // Validation for required fields
+        if (!visaType) {
+            TalentUtil.notification.show("Please enter visa type!", "error", null, null);
+            return;
+        }
+
+        if ((visaType === 'Work Visa' || visaType === 'Student Visa') && !visaExpiryDate) {
+            TalentUtil.notification.show("Please enter visa expiry date!", "error", null, null);
+            return;
+        }
+
+        // If all required fields are filled
+        console.log('Visa Type:', visaType);
+        console.log('Visa Expiry Date:', visaExpiryDate);
+
+        TalentUtil.notification.show('Profile updated successfully!', 'success');
     }
 
     render() {
@@ -60,12 +77,13 @@ class VisaStatus extends React.Component {
                                 <label htmlFor="visaExpiryDate" style={{ fontWeight: 'bold', display: 'block', marginBottom: '5px', marginTop: '10px' }}>
                                     Visa Expiry Date:
                                 </label>
-                                <SingleInput
+                                <input
                                     id="visaExpiryDate"
                                     type="date"
                                     value={this.state.visaExpiryDate}
                                     onChange={this.handleDateChange}
                                     style={{ width: '100%', padding: '8px' }}
+                                    min={new Date().toISOString().split('T')[0]} 
                                 />
                             </div>
                         )}
@@ -79,7 +97,7 @@ class VisaStatus extends React.Component {
                                 border: 'none',
                                 cursor: 'pointer',
                                 fontSize: '16px',
-                                alignSelf: 'flex-end' 
+                                alignSelf: 'flex-end'
                             }}
                         >
                             Save

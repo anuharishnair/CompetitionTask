@@ -1,15 +1,20 @@
 ﻿import React from 'react';
 import { ChildSingleInput } from '../Form/SingleInput.jsx';
-import { Popup } from 'semantic-ui-react';
+import { Button } from 'semantic-ui-react';
 
 export default class SocialMediaLinkedAccount extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
             isEditing: false,
-            linkedIn: props.linkedAccounts.linkedIn || '',
-            github: props.linkedAccounts.github || ''
+            linkedIn: (props.linkedAccounts && props.linkedAccounts.linkedIn) || '',
+            github: (props.linkedAccounts && props.linkedAccounts.github) || '',
+            modalOpen: false,
+            modalMessage: '',
+            modalColor: '',
+            validationError: false
         };
+
 
         this.toggleEdit = this.toggleEdit.bind(this);
         this.handleInputChange = this.handleInputChange.bind(this);
@@ -18,8 +23,7 @@ export default class SocialMediaLinkedAccount extends React.Component {
     }
 
     componentDidMount() {
-        $('.ui.button.social-media')
-            .popup();
+        $('.ui.button.social-media').popup();
     }
 
     toggleEdit() {
@@ -34,20 +38,44 @@ export default class SocialMediaLinkedAccount extends React.Component {
         });
     }
 
+    // Function to validate URLs (without error feedback)
+    validateUrls() {
+        const linkedInRegex = /^(https?:\/\/)?(www\.)?linkedin\.com\/.*$/;
+        const githubRegex = /^(https?:\/\/)?(www\.)?github\.com\/.*$/;
+
+        const isLinkedInValid = linkedInRegex.test(this.state.linkedIn);
+        const isGitHubValid = githubRegex.test(this.state.github);
+
+        if (isLinkedInValid && isGitHubValid) {
+            return true;
+        }
+
+        // Show validation error using TalentUtil
+        TalentUtil.notification.show("Please enter valid LinkedIn and GitHub URLs.", "error", null, null);
+        return false;
+    }
+
     save() {
-        const data = {
-            linkedIn: this.state.linkedIn,
-            github: this.state.github
-        };
-        this.props.updateProfileData(data);
-        this.toggleEdit();
+        if (this.validateUrls()) {
+            const data = {
+                linkedIn: this.state.linkedIn,
+                github: this.state.github
+            };
+            this.props.updateProfileData(data);
+
+            // Show success notification using TalentUtil
+            TalentUtil.notification.show("Profile updated successfully!", "success", null, null);
+
+            this.toggleEdit();
+        }
     }
 
     cancel() {
         this.setState({
             isEditing: false,
             linkedIn: this.props.linkedAccounts.linkedIn || '',
-            github: this.props.linkedAccounts.github || ''
+            github: this.props.linkedAccounts.github || '',
+            validationError: false
         });
     }
 
@@ -64,7 +92,7 @@ export default class SocialMediaLinkedAccount extends React.Component {
                                 value={this.state.linkedIn}
                                 controlFunc={this.handleInputChange}
                                 maxLength={80}
-                                placeholder="Enter your LinkedIn URL"
+                                placeholder="e.g. https://www.linkedin.com/in/yourprofile"
                             />
                         </div>
                         <div className="field">
@@ -75,7 +103,7 @@ export default class SocialMediaLinkedAccount extends React.Component {
                                 value={this.state.github}
                                 controlFunc={this.handleInputChange}
                                 maxLength={80}
-                                placeholder="Enter your GitHub URL"
+                                placeholder="e.g. https://github.com/yourprofile"
                             />
                         </div>
                         <button type="button" className="ui teal button" onClick={this.save}>Save</button>

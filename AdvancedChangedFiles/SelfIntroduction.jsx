@@ -10,7 +10,7 @@ export default class SelfIntroduction extends Component {
             originalDescription: props.description || '',
             summaryError: '',
             descriptionError: '',
-            isEditing: false
+            isEditing: false,
         };
 
         this.handleInputChange = this.handleInputChange.bind(this);
@@ -20,8 +20,7 @@ export default class SelfIntroduction extends Component {
     }
 
     handleInputChange(event) {
-        var name = event.target.name;
-        var value = event.target.value;
+        const { name, value } = event.target;
         this.setState({ [name]: value });
 
         // Validation
@@ -43,24 +42,22 @@ export default class SelfIntroduction extends Component {
     }
 
     save() {
-        var summary = this.state.summary;
-        var description = this.state.description;
+        const { summary, description } = this.state;
 
         // Final validation check before saving
         if (summary.length > 150) {
             this.setState({ summaryError: 'Summary must be no more than 150 characters.' });
+            TalentUtil.notification.show('Summary is too long!', 'error');
             return;
         }
 
         if (description.length < 150 || description.length > 600) {
             this.setState({ descriptionError: 'Description must be between 150-600 characters.' });
+            TalentUtil.notification.show('Description is not within the valid range!', 'error');
             return;
         }
 
-        var data = {
-            summary: summary,
-            description: description
-        };
+        const data = { summary, description };
 
         this.props.updateProfileData(data);
 
@@ -68,8 +65,11 @@ export default class SelfIntroduction extends Component {
         this.setState({
             originalSummary: summary,
             originalDescription: description,
-            isEditing: false
+            isEditing: false,
         });
+
+        // Show success notification
+        TalentUtil.notification.show('Profile updated successfully!', 'success');
     }
 
     cancel() {
@@ -79,8 +79,11 @@ export default class SelfIntroduction extends Component {
             description: this.state.originalDescription,
             summaryError: '',
             descriptionError: '',
-            isEditing: false
+            isEditing: false,
         });
+
+        // Show cancel notification
+        TalentUtil.notification.show('Changes were not saved.', 'error');
     }
 
     toggleEdit() {
@@ -88,6 +91,8 @@ export default class SelfIntroduction extends Component {
     }
 
     render() {
+        const { summaryError, descriptionError } = this.state;
+
         return (
             <div>
                 <div className="field" style={{ marginTop: '10px' }}>
@@ -103,10 +108,10 @@ export default class SelfIntroduction extends Component {
                     <small style={{ display: 'block', marginBottom: '10px', color: 'gray' }}>
                         Summary must be no more than 150 characters.
                     </small>
-                    <p className="error-message" style={{ color: 'red' }}>{this.state.summaryError}</p>
+                    <p className="error-message" style={{ color: 'red' }}>{summaryError}</p>
                 </div>
 
-                <div className="field">                 
+                <div className="field">
                     <textarea
                         name="description"
                         placeholder="Please tell us about any hobbies, additional expertise, or anything else you'd like to add"
@@ -117,8 +122,7 @@ export default class SelfIntroduction extends Component {
                     ></textarea>
                     <small style={{ display: 'block', marginBottom: '10px', color: 'gray' }}>
                         Description must be between 150-600 characters.
-                    </small>
-                    <p className="error-message" style={{ color: 'red' }}>{this.state.descriptionError}</p>
+                    </small>                  
                 </div>
 
                 <div style={{ textAlign: 'right', marginBottom: '10px' }}>
@@ -126,7 +130,7 @@ export default class SelfIntroduction extends Component {
                         <button
                             type="button"
                             className="ui teal button"
-                            onClick={this.toggleEdit}       
+                            onClick={this.toggleEdit}
                         >
                             Edit
                         </button>

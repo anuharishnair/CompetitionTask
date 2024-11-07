@@ -13,7 +13,10 @@ class JobSeekingStatus extends Component {
     handleStatusChange(event) {
         const selectedStatus = event.target.value;
         this.setState({ selectedStatus }, () => {
-            console.log('Selected Job Seeking Status:', selectedStatus);          
+            console.log('Selected Job Seeking Status:', selectedStatus);
+
+            // Show the success notification after status is updated
+            TalentUtil.notification.show('Profile updated successfully!', 'success');
         });
     }
 

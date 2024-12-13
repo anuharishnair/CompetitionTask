@@ -50,7 +50,7 @@ class Experience extends Component {
     handleSave() {
         const { company, position, responsibilities, start, end } = this.state.newExperience;
         if (!company.trim() || !position.trim()) {
-            alert("Please fill out the company and position fields.");
+            TalentUtil.notification.show("Please fill out the company and position fields!", "error", null, null);
             return;
         }
 
@@ -78,11 +78,13 @@ class Experience extends Component {
         this.props.updateProfileData({
             experience: updatedExperiences.map(function (exp) {
                 return Object.assign({}, exp, {
-                    start: exp.start, 
-                    end: exp.end     
+                    start: exp.start,
+                    end: exp.end
                 });
             })
         });
+        TalentUtil.notification.show("Profile updated successfully!", "success", null, null);
+        window.location.reload()
     }
 
     handleCancel() {
@@ -98,7 +100,6 @@ class Experience extends Component {
         const exp = this.state.experiences.find(function (e) {
             return e.id === id;
         });
-        //console.log("startdate before format:", exp.start);
         const formattedStart = this.formatDate(exp.start);
         const formattedEnd = this.formatDate(exp.end);
         this.setState({
@@ -109,10 +110,7 @@ class Experience extends Component {
             editingId: id,
             isAdding: false
         });
-        //console.log("startdate after format:", formattedStart);
     }
-
-
 
     handleDelete(id) {
         const updatedExperiences = this.state.experiences.filter(function (exp) {
@@ -127,8 +125,8 @@ class Experience extends Component {
         const d = new Date(date);
         const year = d.getFullYear();
         const month = String(d.getMonth() + 1).padStart(2, '0');
-        const day = String(d.getDate()).padStart(2, '0');        
-        return `${year}-${month}-${day}`; 
+        const day = String(d.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
     }
 
 
@@ -221,8 +219,8 @@ class Experience extends Component {
                                                 <span>{exp.company}</span>
                                                 <span>{exp.position}</span>
                                                 <span>{exp.responsibilities}</span>
-                                                <span>{this.formatDate(exp.start)}</span> 
-                                                <span>{this.formatDate(exp.end)}</span> 
+                                                <span>{this.formatDate(exp.start)}</span>
+                                                <span>{this.formatDate(exp.end)}</span>
                                                 <div>
                                                     <button
                                                         onClick={(event) => this.handleEdit(exp.id, event)}

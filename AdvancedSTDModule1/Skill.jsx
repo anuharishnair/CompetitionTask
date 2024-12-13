@@ -13,7 +13,6 @@ class SkillsComponent extends Component {
             editingId: null,
         };
 
-        // Binding methods to avoid 'this' issues in older React versions
         this.handleInputChange = this.handleInputChange.bind(this);
         this.handleSave = this.handleSave.bind(this);
         this.handleCancel = this.handleCancel.bind(this);
@@ -39,7 +38,7 @@ class SkillsComponent extends Component {
     handleSave() {
         const { name, level } = this.state.newSkill;
         if (!name.trim()) {
-            alert('Please enter a skill name.');
+            TalentUtil.notification.show("Please enter a skill name!", "error", null, null);
             return;
         }
 
@@ -47,12 +46,10 @@ class SkillsComponent extends Component {
         const { editingId, skills } = this.state;
 
         if (editingId !== null) {
-            // Edit the existing skill
             updatedSkills = skills.map(function (skill) {
                 return skill.id === editingId ? Object.assign({}, this.state.newSkill) : skill;
             }.bind(this));
         } else {
-            // Add a new skill
             updatedSkills = skills.concat(Object.assign({}, this.state.newSkill));
         }
 
@@ -63,8 +60,9 @@ class SkillsComponent extends Component {
             editingId: null,
         });
 
-        // Call the method to update the profile with the new/updated skill
         this.props.updateProfileData({ skills: updatedSkills });
+        TalentUtil.notification.show("Profile updated successfully!", "success", null, null);
+        window.location.reload();
     }
 
     handleCancel() {
@@ -95,9 +93,94 @@ class SkillsComponent extends Component {
         this.props.updateProfileData({ skills: updatedSkills });
     }
 
-    render() {
-        const { skills, newSkill, isAdding, editingId } = this.state;
+    renderNoDataRow() {
+        return (
+            <tr>
+                <td colSpan="3" style={{ textAlign: 'center', color: 'gray', padding: '10px' }}>
+                    No data
+                </td>
+            </tr>
+        );
+    }
+
+    renderEditSkillRow(skill) {
         const skillLevels = ['Beginner', 'Intermediate', 'Expert'];
+        return (
+            <tr key={skill.id}>
+                <td colSpan="3">
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <input
+                            type="text"
+                            name="name"
+                            value={this.state.newSkill.name}
+                            onChange={this.handleInputChange}
+                            placeholder="Enter skill name"
+                            style={{ marginRight: '10px' }}
+                        />
+                        <select
+                            name="level"
+                            value={this.state.newSkill.level}
+                            onChange={this.handleInputChange}
+                            style={{ marginRight: '10px' }}
+                        >
+                            {['Beginner', 'Intermediate', 'Expert'].map(function (level) {
+                                return (
+                                    <option key={level} value={level}>
+                                        {level}
+                                    </option>
+                                );
+                            })}
+                        </select>
+                        <button className="ui teal button" onClick={this.handleSave}>
+                            Save
+                        </button>
+                        <button className="ui button" onClick={this.handleCancel}>
+                            Cancel
+                        </button>
+                    </div>
+                </td>
+            </tr>
+        );
+    }
+
+    renderSkillRow(skill) {
+        return (
+            <tr key={skill.id}>
+                <td colSpan="3">
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <span>{skill.name}</span>
+                        <span>{skill.level}</span>
+                        <div>
+                            <button
+                                onClick={(event) => this.handleEdit(skill.id, event)}
+                                style={{
+                                    background: 'none',
+                                    border: 'none',
+                                    cursor: 'pointer',
+                                    marginRight: '10px',
+                                }}
+                            >
+                                ✏️
+                            </button>
+                            <button
+                                onClick={() => this.handleDelete(skill.id)}
+                                style={{
+                                    background: 'none',
+                                    border: 'none',
+                                    cursor: 'pointer',
+                                }}
+                            >
+                                ❌
+                            </button>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        );
+    }
+
+    render() {
+        const { skills, isAdding, editingId } = this.state;
 
         return (
             <div style={{ width: '100%' }}>
@@ -116,116 +199,15 @@ class SkillsComponent extends Component {
                         </tr>
                     </thead>
                     <tbody>
-                        {skills.length === 0 ? (
-                            <tr>
-                                <td colSpan="3" style={{ textAlign: 'center', color: 'gray', padding: '10px' }}>
-                                    No data
-                                </td>
-                            </tr>
-                        ) : (
-                            skills.map((skill) => (
-                                <tr key={skill.id}>
-                                    {editingId === skill.id ? (
-                                        <td colSpan="3">
-                                            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                                <input
-                                                    type="text"
-                                                    name="name"
-                                                    value={newSkill.name}
-                                                    onChange={this.handleInputChange}
-                                                    placeholder="Enter skill name"
-                                                    style={{ marginRight: '10px' }}
-                                                />
-                                                <select
-                                                    name="level"
-                                                    value={newSkill.level}
-                                                    onChange={this.handleInputChange}
-                                                    style={{ marginRight: '10px' }}
-                                                >
-                                                    {skillLevels.map(function (level) {
-                                                        return (
-                                                            <option key={level} value={level}>
-                                                                {level}
-                                                            </option>
-                                                        );
-                                                    })}
-                                                </select>
-                                                <button className="ui teal button" onClick={this.handleSave}>
-                                                    Save
-                                                </button>
-                                                <button className="ui button" onClick={this.handleCancel}>
-                                                    Cancel
-                                                </button>
-                                            </div>
-                                        </td>
-                                    ) : (
-                                        <td colSpan="3">
-                                            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                                <span>{skill.name}</span>
-                                                <span>{skill.level}</span>
-                                                <div>
-                                                    <button
-                                                        onClick={(event) => this.handleEdit(skill.id, event)}
-                                                        style={{
-                                                            background: 'none',
-                                                            border: 'none',
-                                                            cursor: 'pointer',
-                                                            marginRight: '10px',
-                                                        }}
-                                                    >
-                                                        ✏️
-                                                    </button>
-                                                    <button
-                                                        onClick={() => this.handleDelete(skill.id)}
-                                                        style={{
-                                                            background: 'none',
-                                                            border: 'none',
-                                                            cursor: 'pointer',
-                                                        }}
-                                                    >
-                                                        ❌
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </td>
-                                    )}
-                                </tr>
-                            ))
-                        )}
-                        {isAdding && (
-                            <tr>
-                                <td colSpan="3">
-                                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                        <input
-                                            type="text"
-                                            name="name"
-                                            value={newSkill.name}
-                                            onChange={this.handleInputChange}
-                                            placeholder="Enter skill name"
-                                            style={{ marginRight: '10px' }}
-                                        />
-                                        <select
-                                            name="level"
-                                            value={newSkill.level}
-                                            onChange={this.handleInputChange}
-                                            style={{ marginRight: '10px' }}
-                                        >
-                                            {skillLevels.map((level) => (
-                                                <option key={level} value={level}>
-                                                    {level}
-                                                </option>
-                                            ))}
-                                        </select>
-                                        <button className="ui teal button" onClick={this.handleSave}>
-                                            Add
-                                        </button>
-                                        <button className="ui button" onClick={this.handleCancel}>
-                                            Cancel
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                        )}
+                        {skills.length === 0
+                            ? this.renderNoDataRow()
+                            : skills.map(skill =>
+                                editingId === skill.id
+                                    ? this.renderEditSkillRow(skill)
+                                    : this.renderSkillRow(skill)
+                            )}
+
+                        {isAdding && this.renderEditSkillRow({ id: 'new', name: '', level: 'Beginner' })}
                     </tbody>
                 </table>
             </div>

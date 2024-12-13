@@ -34,23 +34,17 @@ export default class SelfIntroduction extends Component {
         const { name, value } = event.target;
         this.setState({ [name]: value });
 
-        // Validation
-        if (name === 'summary') {
-            if (value.length > 150) {
-                this.setState({ summaryError: 'Summary must be no more than 150 characters.' });
-            } else {
-                this.setState({ summaryError: '' });
-            }
-        }
-
-        if (name === 'description') {
-            if (value.length < 150 || value.length > 600) {
-                this.setState({ descriptionError: 'Description must be between 150-600 characters.' });
-            } else {
-                this.setState({ descriptionError: '' });
-            }
-        }
+        // Handle summary validation
+        this.setState({
+            summaryError: name === 'summary' && value.length > 150
+                ? 'Summary must be no more than 150 characters.'
+                : '',
+            descriptionError: name === 'description' && (value.length < 150 || value.length > 600)
+                ? 'Description must be between 150-600 characters.'
+                : ''
+        });
     }
+
 
     save() {
         const { summary, description } = this.state;

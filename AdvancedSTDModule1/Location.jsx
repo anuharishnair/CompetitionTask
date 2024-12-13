@@ -29,53 +29,55 @@ export class Address extends React.Component {
 
     componentDidMount() {
         if (this.props.addressData) {
-            var address = this.props.addressData;
+            let address = this.props.addressData;
+            let cities = this.state.countries[address.country] || [];
             this.setState({
-                address: address,
-                cities: this.state.countries[address.country] || []
+                address,
+                cities
             });
         }
     }
 
     componentDidUpdate(prevProps) {
         if (this.props.addressData && prevProps.addressData !== this.props.addressData) {
-            var address = this.props.addressData;
+            let address = this.props.addressData;
+            let cities = this.state.countries[address.country] || [];
             this.setState({
-                address: address,
-                cities: this.state.countries[address.country] || []
+                address,
+                cities
             });
         }
     }
 
     handleChange(event) {
-        var address = Object.assign({}, this.state.address);
+        let address = Object.assign({}, this.state.address);
         address[event.target.name] = event.target.value;
-        this.setState({ address: address });
+        this.setState({ address });
 
         if (this.props.updateProfileData) {
-            this.props.updateProfileData({ address: address });
+            this.props.updateProfileData({ address });
         }
     }
 
     handleCountryChange(event) {
-        var selectedCountry = event.target.value;
-        var cities = this.state.countries[selectedCountry] || [];
-        var address = Object.assign({}, this.state.address);
+        let selectedCountry = event.target.value;
+        let cities = this.state.countries[selectedCountry] || [];
+        let address = Object.assign({}, this.state.address);
         address.country = selectedCountry;
         address.city = "";
         this.setState({
-            address: address,
-            cities: cities
+            address,
+            cities
         });
     }
 
     handleSubmit(event) {
         event.preventDefault();
-        var address = this.state.address;
+        let address = this.state.address;
         if (this.validateAddress(address)) {
             this.setState({ isEditing: false });
             if (this.props.saveProfileData) {
-                this.props.saveProfileData({ address: address });
+                this.props.saveProfileData({ address });
             }
             TalentUtil.notification.show("Profile updated successfully!", "success", null, null);
         } else {
@@ -89,9 +91,9 @@ export class Address extends React.Component {
     }
 
     handleEdit() {
-        var address = this.state.address;
-        var cities = this.state.countries[address.country] || [];
-        this.setState({ isEditing: true, cities: cities });
+        let address = this.state.address;
+        let cities = this.state.countries[address.country] || [];
+        this.setState({ isEditing: true, cities });
     }
 
     handleCancel() {
@@ -99,10 +101,13 @@ export class Address extends React.Component {
     }
 
     render() {
-        var address = this.state.address;
-        var countryOptions = Object.keys(this.state.countries);
+        let address = this.state.address;
+        let isEditing = this.state.isEditing;
+        let countries = this.state.countries;
+        let cities = this.state.cities;
+        let countryOptions = Object.keys(countries);
 
-        if (this.state.isEditing) {
+        if (isEditing) {
             return (
                 <form onSubmit={this.handleSubmit}>
                     <div style={{ marginTop: '10px' }}>
@@ -177,7 +182,7 @@ export class Address extends React.Component {
                             disabled={!address.country}
                         >
                             <option value="" disabled>Select a city</option>
-                            {this.state.cities.map(function (city) {
+                            {cities.map(function (city) {
                                 return (
                                     <option key={city} value={city}>{city}</option>
                                 );
@@ -191,7 +196,7 @@ export class Address extends React.Component {
                 </form>
             );
         } else {
-            var addressParts = [
+            let addressParts = [
                 address.number,
                 address.street,
                 address.suburb,
@@ -200,13 +205,13 @@ export class Address extends React.Component {
                 address.country
             ];
 
-            var filteredAddressParts = addressParts.filter(function (part) {
+            let filteredAddressParts = addressParts.filter(function (part) {
                 return part != null && part.toString().trim() !== '';
             }).map(function (part) {
                 return part.toString().trim();
             });
 
-            var displayAddress = filteredAddressParts.length > 0
+            let displayAddress = filteredAddressParts.length > 0
                 ? filteredAddressParts.join(', ')
                 : 'Not specified';
 
@@ -229,6 +234,7 @@ export class Address extends React.Component {
         }
     }
 }
+
 
 export class Nationality extends React.Component {
     constructor(props) {

@@ -26,8 +26,7 @@ class TalentStatus extends Component {
                 selectedStatus,
                 availableDate: null,
             },
-            () => {
-                console.log('Selected Job Seeking Status:', selectedStatus);
+            () => {           
 
                 // Save the selected status to localStorage to persist it after page refresh
                 localStorage.setItem('jobSeekingStatus', selectedStatus);

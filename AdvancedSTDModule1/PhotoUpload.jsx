@@ -19,9 +19,7 @@ export default class PhotoUpload extends Component {
     }
 
     componentDidUpdate(prevProps) {
-        // Handle prop change if needed 
         if (this.props.imageId !== prevProps.imageId) {
-            console.log("componentDidUpdate triggered: Image ID changed");
             this.setState({
                 profilePhotoUrl: this.props.imageId,
                 profilePhoto: this.props.photoName || null,
@@ -67,12 +65,10 @@ export default class PhotoUpload extends Component {
     handleUploadAction(event) {
         event.preventDefault();
 
-        if (!this.state.file && !this.state.profilePhoto) {
-            console.log("No file selected or no photo to upload");
+        if (!this.state.file && !this.state.profilePhoto) {          
+            TalentUtil.notification.show("No file selected or no photo to upload!", "error", null, null);
             return; 
         }
-
-        console.log("File selected:", this.state.file ? this.state.file.name : "No file selected");
         this.setState({ uploading: true });
 
         const formData = new FormData();
@@ -89,7 +85,7 @@ export default class PhotoUpload extends Component {
         })
             .then(function (response) {
                 if (!response.ok) {
-                    console.error('Failed to upload photo. Response not OK:', response);
+                    TalentUtil.notification.show("Invalid image format! Please select .jpg, .jpeg, .png, or .gif.", "error", null, null);
                     throw new Error('Failed to upload photo.');
                 }
                 return response.json(); 
@@ -116,8 +112,9 @@ export default class PhotoUpload extends Component {
                         profilePhotoUrl: newImageUrl,
                         isEditing: false, 
                     });
-                } else {
-                    console.log("Error: No profile photo URL returned from server.");
+                    TalentUtil.notification.show("Profile photo updated successfully!", "success", null, null);
+                } else {       
+                    TalentUtil.notification.show("Server Error!", "error", null, null);
                 }
 
                 self.setState({
@@ -126,7 +123,6 @@ export default class PhotoUpload extends Component {
                 });
             })
             .catch(function (error) {
-                console.error("Error during upload:", error);
                 self.setState({ uploading: false });
             });
     }

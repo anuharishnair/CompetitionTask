@@ -116,27 +116,16 @@ export default class AccountProfile extends React.Component {
 
     //updates component's state without saving data
     updateWithoutSave(newValues) {
-        console.log('updateWithoutSave Updating field with value:', newValues);
-        let newProfile = Object.assign({}, this.state.profileData, newValues);      
-        this.setState({ profileData: newProfile }, () => {
-
-            // Validate the update
-            if (this.state.profileData.id === newProfile.id) {
-                console.log('Profile updated successfully.');
-            } else {
-                console.warn('Profile update failed.');
-            }
-        });
+        let newProfile = Object.assign({}, this.state.profileData, newValues);
+        this.setState({ profileData: newProfile });
     }
 
     //updates component's state and saves data
     updateAndSaveData(newValues) {
-        console.log("updateAndSaveData: ", newValues);
-
-        let newProfile = Object.assign({}, this.state.profileData, newValues)
+        let newProfile = Object.assign({}, this.state.profileData, newValues);
         this.setState({
             profileData: newProfile
-        }, this.saveProfile)
+        }, () => this.saveProfile());
     }
 
 
@@ -144,33 +133,61 @@ export default class AccountProfile extends React.Component {
         this.updateAndSaveData(newValues)
     }
 
-    saveProfile() {
-        console.log("inside saveProfile Payload being sent to API:", this.state.profileData);
-        var cookies = Cookies.get('talentAuthToken');
-        $.ajax({
-            url: 'https://advancedtalentprofile-e2gkffcccyg0hhdm.australiaeast-01.azurewebsites.net/profile/profile/updateTalentProfile',
-            headers: {
-                'Authorization': 'Bearer ' + cookies,
-                'Content-Type': 'application/json'
-            },
-            type: "POST",
-            data: JSON.stringify(this.state.profileData),
-            success: function (res) {
-                console.log(res)
-                if (res.success == true) {
-                    TalentUtil.notification.show("Profile updated sucessfully", "success", null, null)
-                } else {
-                    TalentUtil.notification.show("Profile did not update successfully", "error", null, null)
-                }
+    //saveProfile() {
+    //    var cookies = Cookies.get('talentAuthToken');
+    //    $.ajax({
+    //        url: 'https://advancedtalentprofile-e2gkffcccyg0hhdm.australiaeast-01.azurewebsites.net/profile/profile/updateTalentProfile',
+    //        headers: {
+    //            'Authorization': 'Bearer ' + cookies,
+    //            'Content-Type': 'application/json'
+    //        },
+    //        type: "POST",
+    //        data: JSON.stringify(this.state.profileData),
+    //        success: function (res) {
+    //            console.log(res);
+    //            TalentUtil.notification.show(
+    //                res.success
+    //                    ? "Profile updated successfully"
+    //                    : "Profile did not update successfully",
+    //                res.success ? "success" : "error",
+    //                null,
+    //                null
+    //            );
+    //        }.bind(this),
+    //        error: function () {
+    //            TalentUtil.notification.show("An error occurred while updating the profile", "error", null, null);
+    //        }
+    //    });
+    //}
 
-            }.bind(this),
-            error: function (res, a, b) {
-                console.log(res)
-                console.log(a)
-                console.log(b)
-            }
-        })
+    saveProfile() {
+        return new Promise((resolve, reject) => {
+            var cookies = Cookies.get('talentAuthToken');
+            $.ajax({
+                url: 'https://advancedtalentprofile-e2gkffcccyg0hhdm.australiaeast-01.azurewebsites.net/profile/profile/updateTalentProfile',
+                headers: {
+                    'Authorization': 'Bearer ' + cookies,
+                    'Content-Type': 'application/json'
+                },
+                type: "POST",
+                data: JSON.stringify(this.state.profileData),
+                success: function (res) {
+                    console.log(res);
+                    if (res.success) {
+                        console.log("Server response (success):", res);
+                        resolve(res);
+                    } else {
+                        reject(new Error("Profile did not update successfully"));
+                    }
+                }.bind(this),
+                error: function (err) {
+                    console.error(err);
+                    reject(new Error("Error during profile update"));
+                }
+            });
+        });
     }
+
 
     render() {
         const profile = {
@@ -179,7 +196,6 @@ export default class AccountProfile extends React.Component {
             email: this.state.profileData.email,
             phone: this.state.profileData.phone
         };
-        //console.log('INSIDE Render photoURL:', this.state.profileData.profilePhotoUrl);
         return (
             <BodyWrapper reload={this.loadData} loaderData={this.state.loaderData}>
                 <section className="page-body">
@@ -242,6 +258,7 @@ export default class AccountProfile extends React.Component {
                                             tooltip='Select languages that you speak'
                                         >
                                             <Language
+                                                getLoadData={this.loadData}
                                                 UserId={this.state.profileData.id}
                                                 languageData={this.state.profileData.languages}
                                                 updateProfileData={this.updateAndSaveData}
@@ -252,6 +269,7 @@ export default class AccountProfile extends React.Component {
                                             tooltip='List your skills'
                                         >
                                             <Skill
+                                                getLoadData={this.loadData}
                                                 skillData={this.state.profileData.skills}
                                                 updateProfileData={this.updateAndSaveData}
                                             />
@@ -261,6 +279,7 @@ export default class AccountProfile extends React.Component {
                                             tooltip='Add your work experience'
                                         >
                                             <Experience
+                                                getLoadData={this.loadData}
                                                 experienceData={this.state.profileData.experience}
                                                 updateProfileData={this.updateAndSaveData}
                                             />

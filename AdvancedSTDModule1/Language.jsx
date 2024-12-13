@@ -14,7 +14,6 @@ class LanguageComponent extends Component {
             editingId: null
         };
 
-        // Binding methods to avoid 'this' issues in older React versions
         this.handleInputChange = this.handleInputChange.bind(this);
         this.handleSave = this.handleSave.bind(this);
         this.handleCancel = this.handleCancel.bind(this);
@@ -48,7 +47,7 @@ class LanguageComponent extends Component {
     handleSave() {
         const { name, level } = this.state.newLanguage;
         if (!name.trim()) {
-            alert("Please enter a language name.");
+            TalentUtil.notification.show("Please enter a language name!", "error", null, null);
             return;
         }
 
@@ -56,24 +55,23 @@ class LanguageComponent extends Component {
         const { editingId, languages } = this.state;
 
         if (editingId !== null) {
-            // Edit the existing language
             updatedLanguages = languages.map(function (lang) {
                 return lang.id === editingId ? Object.assign({}, this.state.newLanguage) : lang;
             }.bind(this));
         } else {
-            // Add a new language
             updatedLanguages = languages.concat(Object.assign({}, this.state.newLanguage));
         }
 
         this.setState({
             languages: updatedLanguages,
             newLanguage: { name: "", level: "Basic", currentUserId: this.props.UserId },
-            isAdding: false, 
+            isAdding: false,
             editingId: null
         });
 
-        // Call the method to update the profile with the new/updated language
         this.props.updateProfileData({ languages: updatedLanguages });
+        TalentUtil.notification.show("Profile updated successfully!", "success", null, null);
+        window.location.reload();
     }
 
     handleCancel() {
@@ -104,10 +102,134 @@ class LanguageComponent extends Component {
         this.props.updateProfileData({ languages: updatedLanguages });
     }
 
-    render() {
-        const { languages, newLanguage, isAdding, editingId } = this.state;
+    renderEditableRow(lang) {
         const languageLevels = ["Basic", "Conversational", "Fluent", "Native/Bilingual"];
+        return (
+            <td colSpan="3">
+                <div style={{ display: "flex", justifyContent: "space-between" }}>
+                    <input
+                        type="text"
+                        name="name"
+                        value={this.state.newLanguage.name}
+                        onChange={this.handleInputChange}
+                        placeholder="Enter language name"
+                        style={{ marginRight: "10px" }}
+                    />
+                    <select
+                        name="level"
+                        value={this.state.newLanguage.level}
+                        onChange={this.handleInputChange}
+                        style={{ marginRight: "10px" }}
+                    >
+                        {languageLevels.map(level => (
+                            <option key={level} value={level}>
+                                {level}
+                            </option>
+                        ))}
+                    </select>
+                    <button className="ui teal button" onClick={this.handleSave}>
+                        Save
+                    </button>
+                    <button className="ui button" onClick={this.handleCancel}>
+                        Cancel
+                    </button>
+                </div>
+            </td>
+        );
+    }
+    renderNormalRow(lang) {
+        return (
+            <td colSpan="3">
+                <div style={{ display: "flex", justifyContent: "space-between" }}>
+                    <span>{lang.name}</span>
+                    <span>{lang.level}</span>
+                    <div>
+                        <button
+                            onClick={(event) => this.handleEdit(lang.id, event)}
+                            style={{
+                                background: "none",
+                                border: "none",
+                                cursor: "pointer",
+                                marginRight: "10px"
+                            }}
+                        >
+                            ✏️
+                        </button>
+                        <button
+                            onClick={() => this.handleDelete(lang.id)}
+                            style={{
+                                background: "none",
+                                border: "none",
+                                cursor: "pointer"
+                            }}
+                        >
+                            ❌
+                        </button>
+                    </div>
+                </div>
+            </td>
+        );
+    }
 
+    renderLanguageTable() {
+        const { languages, editingId } = this.state;
+
+        return languages.length === 0 ? (
+            <tr>
+                <td colSpan="3" style={{ textAlign: "center", color: "gray", padding: "10px" }}>
+                    No data
+                </td>
+            </tr>
+        ) : (
+            languages.map((lang) => (
+                <tr key={lang.id}>
+                    {editingId === lang.id
+                        ? this.renderEditableRow(lang)
+                        : this.renderNormalRow(lang)}
+                </tr>
+            ))
+        );
+    }
+
+    renderAddNewRow() {
+        const languageLevels = ["Basic", "Conversational", "Fluent", "Native/Bilingual"];
+        return (
+            <tr>
+                <td colSpan="3">
+                    <div style={{ display: "flex", justifyContent: "space-between" }}>
+                        <input
+                            type="text"
+                            name="name"
+                            value={this.state.newLanguage.name}
+                            onChange={this.handleInputChange}
+                            placeholder="Enter language name"
+                            style={{ marginRight: "10px" }}
+                        />
+                        <select
+                            name="level"
+                            value={this.state.newLanguage.level}
+                            onChange={this.handleInputChange}
+                            style={{ marginRight: "10px" }}
+                        >
+                            {languageLevels.map(level => (
+                                <option key={level} value={level}>
+                                    {level}
+                                </option>
+                            ))}
+                        </select>
+                        <button className="ui teal button" onClick={this.handleSave}>
+                            Add
+                        </button>
+                        <button className="ui button" onClick={this.handleCancel}>
+                            Cancel
+                        </button>
+                    </div>
+                </td>
+            </tr>
+        );
+    }
+
+    render() {
         return (
             <div style={{ width: "100%" }}>
                 <table className="ui table" style={{ border: "none", borderCollapse: "collapse", width: "100%" }}>
@@ -116,7 +238,7 @@ class LanguageComponent extends Component {
                             <th style={{ textAlign: "left", padding: "10px" }}>Language</th>
                             <th style={{ textAlign: "left", padding: "10px" }}>Level</th>
                             <th style={{ textAlign: "center", padding: "10px" }}>
-                                {!isAdding && editingId === null && (
+                                {!this.state.isAdding && this.state.editingId === null && (
                                     <button className="ui teal button" onClick={() => this.setState({ isAdding: true })}>
                                         + Add New
                                     </button>
@@ -125,112 +247,8 @@ class LanguageComponent extends Component {
                         </tr>
                     </thead>
                     <tbody>
-                        {languages.length === 0 ? (
-                            <tr>
-                                <td colSpan="3" style={{ textAlign: "center", color: "gray", padding: "10px" }}>
-                                    No data
-                                </td>
-                            </tr>
-                        ) : (
-                            languages.map((lang) => (
-                                <tr key={lang.id}>
-                                    {editingId === lang.id ? (
-                                        <td colSpan="3">
-                                            <div style={{ display: "flex", justifyContent: "space-between" }}>
-                                                <input
-                                                    type="text"
-                                                    name="name"
-                                                    value={newLanguage.name}
-                                                    onChange={this.handleInputChange}
-                                                    placeholder="Enter language name"
-                                                    style={{ marginRight: "10px" }}
-                                                />
-                                                <select
-                                                    name="level"
-                                                    value={newLanguage.level}
-                                                    onChange={this.handleInputChange}
-                                                    style={{ marginRight: "10px" }}
-                                                >
-                                                    {languageLevels.map(function (level) {
-                                                        return <option key={level} value={level}>{level}</option>;
-                                                    })}
-                                                </select>
-                                                <button className="ui teal button" onClick={this.handleSave}>
-                                                    Save
-                                                </button>
-                                                <button className="ui button" onClick={this.handleCancel}>
-                                                    Cancel
-                                                </button>
-                                            </div>
-                                        </td>
-                                    ) : (
-                                        <td colSpan="3">
-                                            <div style={{ display: "flex", justifyContent: "space-between" }}>
-                                                <span>{lang.name}</span>
-                                                <span>{lang.level}</span>
-                                                <div>
-                                                    <button
-                                                        onClick={(event) => this.handleEdit(lang.id, event)}
-                                                        style={{
-                                                            background: "none",
-                                                            border: "none",
-                                                            cursor: "pointer",
-                                                            marginRight: "10px"
-                                                        }}
-                                                    >
-                                                        ✏️
-                                                    </button>
-                                                    <button
-                                                        onClick={() => this.handleDelete(lang.id)}
-                                                        style={{
-                                                            background: "none",
-                                                            border: "none",
-                                                            cursor: "pointer"
-                                                        }}
-                                                    >
-                                                        ❌
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </td>
-                                    )}
-                                </tr>
-                            ))
-                        )}
-                        {isAdding && (
-                            <tr>
-                                <td colSpan="3">
-                                    <div style={{ display: "flex", justifyContent: "space-between" }}>
-                                        <input
-                                            type="text"
-                                            name="name"
-                                            value={newLanguage.name}
-                                            onChange={this.handleInputChange}
-                                            placeholder="Enter language name"
-                                            style={{ marginRight: "10px" }}
-                                        />
-                                        <select
-                                            name="level"
-                                            value={newLanguage.level}
-                                            onChange={this.handleInputChange}
-                                            style={{ marginRight: "10px" }}
-                                        >
-                                            {languageLevels.map((level) => (
-                                                <option key={level} value={level}>
-                                                    {level}
-                                                </option>
-                                            ))}
-                                        </select>
-                                        <button className="ui teal button" onClick={this.handleSave}>
-                                            Add
-                                        </button>
-                                        <button className="ui button" onClick={this.handleCancel}>
-                                            Cancel
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                        )}
+                        {this.renderLanguageTable()}
+                        {this.state.isAdding && this.renderAddNewRow()}
                     </tbody>
                 </table>
             </div>

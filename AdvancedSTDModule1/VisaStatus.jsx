@@ -70,10 +70,6 @@ class VisaStatus extends React.Component {
             return;
         }
 
-        // If all required fields are filled
-        console.log('Visa Type:', visaType);
-        console.log('Visa Expiry Date:', visaExpiryDate);
-
         // Notify parent that the profile is saved
         this.props.saveProfileData({
             visaStatus: visaType,

@@ -133,58 +133,29 @@ export default class AccountProfile extends React.Component {
         this.updateAndSaveData(newValues)
     }
 
-    //saveProfile() {
-    //    var cookies = Cookies.get('talentAuthToken');
-    //    $.ajax({
-    //        url: 'https://advancedtalentprofile-e2gkffcccyg0hhdm.australiaeast-01.azurewebsites.net/profile/profile/updateTalentProfile',
-    //        headers: {
-    //            'Authorization': 'Bearer ' + cookies,
-    //            'Content-Type': 'application/json'
-    //        },
-    //        type: "POST",
-    //        data: JSON.stringify(this.state.profileData),
-    //        success: function (res) {
-    //            console.log(res);
-    //            TalentUtil.notification.show(
-    //                res.success
-    //                    ? "Profile updated successfully"
-    //                    : "Profile did not update successfully",
-    //                res.success ? "success" : "error",
-    //                null,
-    //                null
-    //            );
-    //        }.bind(this),
-    //        error: function () {
-    //            TalentUtil.notification.show("An error occurred while updating the profile", "error", null, null);
-    //        }
-    //    });
-    //}
-
     saveProfile() {
-        return new Promise((resolve, reject) => {
-            var cookies = Cookies.get('talentAuthToken');
-            $.ajax({
-                url: 'https://advancedtalentprofile-e2gkffcccyg0hhdm.australiaeast-01.azurewebsites.net/profile/profile/updateTalentProfile',
-                headers: {
-                    'Authorization': 'Bearer ' + cookies,
-                    'Content-Type': 'application/json'
-                },
-                type: "POST",
-                data: JSON.stringify(this.state.profileData),
-                success: function (res) {
-                    console.log(res);
-                    if (res.success) {
-                        console.log("Server response (success):", res);
-                        resolve(res);
-                    } else {
-                        reject(new Error("Profile did not update successfully"));
-                    }
-                }.bind(this),
-                error: function (err) {
-                    console.error(err);
-                    reject(new Error("Error during profile update"));
-                }
-            });
+        var cookies = Cookies.get('talentAuthToken');
+        $.ajax({
+            url: 'https://advancedtalentprofile-e2gkffcccyg0hhdm.australiaeast-01.azurewebsites.net/profile/profile/updateTalentProfile',
+            headers: {
+                'Authorization': 'Bearer ' + cookies,
+                'Content-Type': 'application/json'
+            },
+            type: "POST",
+            data: JSON.stringify(this.state.profileData),
+            success: function (res) {
+                TalentUtil.notification.show(
+                    res.success
+                        ? "Profile updated successfully"
+                        : "Profile did not update successfully",
+                    res.success ? "success" : "error",
+                    null,
+                    null
+                );
+            }.bind(this),
+            error: function () {
+                TalentUtil.notification.show("An error occurred while updating the profile", "error", null, null);
+            }
         });
     }
 
